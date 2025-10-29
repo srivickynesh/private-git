@@ -1,0 +1,60 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: simple-pipeline
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/tags: getting-started
+    tekton.dev/displayName: "simple pipeline"
+spec:
+  description: >-
+    This pipeline takes a name, prints it out,
+    sleeps for 5 seconds and prints out the name again.
+
+  params:
+    - name: name
+      description: The name to print
+      type: string
+      default: "Tekton"
+  tasks:
+    - name: print-name
+      taskSpec:
+        params:
+          - name: name
+            type: string
+        steps:
+          - name: print-name
+            image: alpine # Using a minimal image
+            script: |
+              #!/bin/sh
+              echo "Hello $(params.name)!"
+      params:
+        - name: name
+          value: $(params.name)
+    - name: wait
+      runAfter: [print-name] # Ensure this runs after the first print
+      taskSpec:
+        steps:
+          - name: sleep
+            image: alpine # Using a minimal image
+            script: |
+              #!/bin/sh
+              echo "Sleeping for 5 seconds..."
+              sleep 5
+    - name: print-name-again
+      runAfter: [wait] # Ensure this runs after waiting
+      taskSpec:
+        params:
+          - name: name
+            type: string
+        steps:
+          - name: print-name-again
+            image: alpine # Using a minimal image
+            script: |
+              #!/bin/sh
+              echo "Hello again $(params.name)!"
+      params:
+        - name: name
+          value: $(params.name)
