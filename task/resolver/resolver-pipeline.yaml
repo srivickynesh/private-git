@@ -15,4 +15,4 @@ spec:
         - name: revision
           value: main
         - name: pathInRepo
-          value: resolver-task.yaml
+          value: task/resolver/resolver-task.yaml
